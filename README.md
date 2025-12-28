@@ -193,7 +193,7 @@ const genAI = new GoogleGenerativeAI(apiKey);
 export const textEmbeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
 
 // Model for chatting
-export const chatModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+export const chatModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 // Helper to turn text into numbers
 export async function getEmbedding(text) {
@@ -378,9 +378,11 @@ async function startBot() {
       let response = await result.response;
       let text = response.text();
 
-      // 2. Check if AI wants to use a tool (Function Calling)
-      const calls = response.functionCalls();
-      if (calls) {
+      // 2. Loop to handle function calls (Function Calling)
+      while (response.functionCalls()) {
+        const calls = response.functionCalls();
+        if (!calls) break;
+
         const toolResponses = [];
         
         for (const call of calls) {
@@ -389,14 +391,22 @@ async function startBot() {
           console.log(`> ⚙️ Running tool: ${fnName}...`);
 
           // Run the tool function
-          const toolResult = await functions[fnName](fnArgs);
-          
-          toolResponses.push({
-            functionResponse: {
-              name: fnName,
-              response: { result: toolResult }
-            }
-          });
+          if (functions[fnName]) {
+            const toolResult = await functions[fnName](fnArgs);
+            toolResponses.push({
+              functionResponse: {
+                name: fnName,
+                response: { result: toolResult }
+              }
+            });
+          } else {
+             toolResponses.push({
+              functionResponse: {
+                name: fnName,
+                response: { error: "Tool not found" }
+              }
+            });
+          }
         }
 
         // 3. Send tool results back to AI
