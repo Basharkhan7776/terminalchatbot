@@ -155,14 +155,21 @@ We need to tell MongoDB how to search for "similarity" (Vectors).
 
 ```json
 {
-  "fields": [
-    {
-      "numDimensions": 768,
-      "path": "embedding",
-      "similarity": "cosine",
-      "type": "vector"
-    }
-  ]
+  "name": "bot",
+  "version": "1.0.0",
+  "description": "chat-bot",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "dotenv": "^17.2.3",
+    "mongodb": "^7.0.0"
+  }
 }
 ```
 *Note: We use 768 because that's the size of Gemini's `text-embedding-004` model output.*
